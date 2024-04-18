@@ -1,5 +1,6 @@
 import tkinter as tk
 import time
+import keyboard
 class GUI:
     def __init__(self):
         self.root = tk.Tk()
@@ -20,30 +21,49 @@ class GUI:
                 width=2
             self.canvas.create_line(0,80*i,720,80*i, width=width, fill="black")
     def fillSpace(self,i,j,cell_value):
+            text_id=0
             if self.canvas:
                 x = (j - 1) * 80 + 40
                 y = (i - 1) * 80 + 40
-                self.canvas.create_text(x, y, text=str(cell_value), font=("Arial", 20), fill="black")
+                text_id=self.canvas.create_text(x, y, text=str(cell_value), font=("Arial", 20), fill="black")
+            return text_id
+    def getInput(self,event):
+        #get click location
+        x = event.x
+        y = event.y
+        #get click square
+
+        for i in range(1,10):
+            upperLimit = (i - 1) * 80
+            downLimit = i * 80
+            for j in range(1,10):
+                leftLimit=(j - 1)
+                rightLimit=j*80
+                if x > leftLimit and x < rightLimit and y > upperLimit and y < downLimit:
+                    text_id=self.fillSpace(i,j,'|')
+                    pos2=j
+                    pos1=i
+                    break
+        self.canvas.update()
+        #get variable polling
+        key= keyboard.read_event()
+        while True:
+                if key.name.isdigit():
+                    self.canvas.delete(text_id)
+                    a=self.fillSpace(pos1,pos2,key.name)
+                    break
+                else:
+                    print("wrong input")
+                    key = keyboard.read_event()
+
+        self.canvas.update()
     def gui(self):
 
         self.draw_grid()
         self.canvas.pack()
+        self.canvas.bind("<Button-1>", self.getInput)
         self.root.mainloop()
 g=GUI()
 print(720/9)
-g.fillSpace(9,9,8)
 g.gui()
 
-'''def draw_cells(canvas, cell_values,pos):
-    canvas.delete("all")
-    draw_grid(canvas)
-    print(cell_values)
-    for i in range(3):
-        for j in range(3):
-            cell_value = cell_values[i][j]
-            color='black'
-            if cell_value==0:
-                color='red'
-            cell_center_x = (j * 240) + 120
-            cell_center_y = (i * 240) + 120
-            canvas.create_text(cell_center_x, cell_center_y, text=cell_value, font=("Arial", 100), fill=color)'''
