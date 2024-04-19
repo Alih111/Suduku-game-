@@ -23,7 +23,9 @@ class ModelSelector:
         gui.gui()
 
     def run_model2_gui(self):
-        # Add code to run model 2 GUI here
+        self.root.destroy()
+        gui = GUI(mode=2)
+        gui.gui()
         pass
 
     def run(self):
