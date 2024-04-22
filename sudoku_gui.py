@@ -21,7 +21,7 @@ class GUI:
 
 
         self.board = [[0 for _ in range(9)] for _ in range(9)]
-
+        self.solved_board = [[0 for _ in range(9)] for _ in range(9)] 
         # self.solver = SudokuSolver(self.board)
         if mode == 1:
             self.generate_initial_state() 
@@ -79,7 +79,7 @@ class GUI:
         solver = SudokuSolver(self.board)
         solution = solver.solve_sudoku()
         if solution:
-            self.update_gui(solution)
+            self.update_gui(self.solved_board)
         else:
             print("No solution found.")
 
@@ -114,6 +114,6 @@ class GUI:
         return True
     def generate_initial_state(self):
         generator = SudokuGenerator()
-        self.board = generator.generateSudoku()
+        self.solved_board ,self.board = generator.generateSudoku()
         self.update_generate_gui(self.board)
 
