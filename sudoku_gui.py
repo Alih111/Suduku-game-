@@ -79,7 +79,7 @@ class GUI:
         solver = SudokuSolver(self.board)
         solution = solver.solve_sudoku()
         if solution:
-            self.update_gui(self.solved_board)
+            self.update_gui(solution)
         else:
             print("No solution found.")
 
