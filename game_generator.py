@@ -29,23 +29,23 @@ class SudokuGenerator:
         if not self.not_full():
             return True
 
-        i, j = self.find_empty_location()
-        k = i // 3 * 3 + j // 3
+        row, col = self.find_empty_location()
+        box = row // 3 * 3 + col // 3
 
-        intersect = horizontal[i] & vertical[j] & regional[k]
+        intersect = horizontal[row] & vertical[col] & regional[box]
         intersect = list(intersect)
         shuffle(intersect)
         for num in intersect:
-            self.board[i][j] = num
-            horizontal[i].remove(num)
-            vertical[j].remove(num)
-            regional[k].remove(num)
+            self.board[row][col] = num
+            horizontal[row].remove(num)
+            vertical[col].remove(num)
+            regional[box].remove(num)
             if self.solveSudoku(horizontal, vertical, regional):
                 return True
-            self.board[i][j] = 0
-            horizontal[i].add(num)
-            vertical[j].add(num)
-            regional[k].add(num)
+            self.board[row][col] = 0
+            horizontal[row].add(num)
+            vertical[col].add(num)
+            regional[box].add(num)
         return False
 
     def find_empty_location(self):
