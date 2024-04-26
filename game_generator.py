@@ -5,6 +5,7 @@ class SudokuGenerator:
     def __init__(self):
         self.board = [[0] * 9 for _ in range(9)]
 
+
     def generateSudoku(self):
         horizontal = [set(range(1, 10)) for _ in range(9)]
         vertical = [set(range(1, 10)) for _ in range(9)]
@@ -72,16 +73,11 @@ class SudokuGenerator:
                 self.board[i][j] = temp
                 
 
-
+'''
 # Example usage
 generator = SudokuGenerator()
 initial_state, sudoku_solution = generator.generateSudoku()
 if sudoku_solution and initial_state:
-    print("Full board solution:")
-    for row in initial_state:
-        print(row)
-    print("\nInitial state:")
-    for row in sudoku_solution:
-        print(row)
+   pass
 else:
-    print("No solution exists")
+    print("No solution exists")'''

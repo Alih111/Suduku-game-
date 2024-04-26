@@ -1,126 +1,157 @@
 
+from collections import deque
 class SudokuSolver:
     def __init__(self, board):
-        self.board = board
-        print("\nInitial state:")
-        for row in self.board:
-            print(row)
+        self.board=board
+        self.variables = []
+        self.arcs = []
+        self.domains = {}
+        self.initVariables()
+        self.initArcs()
+        self.initDomain()
+    def initVariables(self):#craete variables for the whole board
+        for i in range(9):
+            for j in range(9):
+                self.variables.append((i,j))
+    def initArcs(self):#initalize arcs for the whole board
+        for i in range(9):# row arcs
+            for j in range(8):
+                for k in range(j + 1, 9):
+                    self.arcs.append(((i, j), (i, k)))
+        for i in range(9):# column arcs
+            for j in range(8):
+                for k in range(j + 1, 9):
+                    self.arcs.append(((j,i), (k,i)))
+        # box arcs
+        for row in range(0, 9, 3):
+            for col in range(0, 9, 3):
+                box_cells = [(row + i, col + j) for i in range(3) for j in range(3)]#get all the cells in the box
+                for i, cell1 in enumerate(box_cells):
+                    for cell2 in box_cells[i + 1:]:
+                        self.arcs.append((cell1, cell2))
+    def initDomain(self):# initialize domain for each variabe
+        for variable in self.variables:
+            if self.board[variable[0]][variable[1]]==0:
+                self.domains[variable] = set(range(1, 10))
+            else:
+                self.domains[variable] = self.board[variable[0]][variable[1]]
+
+    def revise(self, x):
+        revised = False
+        if isinstance(self.domains[x[0]], int):
+            value = self.domains[x[0]]
+            if isinstance(self.domains[x[1]], set) and value in self.domains[x[1]]:
+                self.domains[x[1]].remove(value)
+                revised = True
+            elif isinstance(self.domains[x[1]], int) and value == self.domains[x[1]]:
+                revised = True
+        return revised
+
+    def AC_3(self):
+        queue = set(self.arcs)
+        print(len(queue))
+        while queue:
+            arc = queue.pop()
+            if self.revise(arc):
+                if isinstance(self.domains[arc[1]], int) and self.domains[arc[0]] == self.domains[arc[1]] or (isinstance(self.domains[arc[1]],set)and len(self.domains[arc[1]])==0):
+                    return False
+                for xl, xk in self.arcs:
+                    if xl != arc[0] and xk == arc[1]:
+                        queue.add((arc[1],xl))
+                print(len(queue))
+        return True
 
     def solve_sudoku(self):
-        # Convert the current board state to a CSP representation
-        csp = self.convert_to_csp()
-
+        if self.AC_3():
         # Perform backtracking search with arc consistency
-        solution = self.backtrack_search(csp)
+            solution = self.backtrack_search()
+            if solution is None:
+                print("No solution")
+                exit(1)
+            value = [[0 for _ in range(9)] for _ in range(9)]
+            for i in range(9):
+                for j in range(9):
+                    value[i][j]=self.domains[(i,j)]
+            return value
+        print("the puzzle you entered is wrong")
 
-        return solution
-
-    def convert_to_csp(self):
-        csp = []
-        for i in range(9):
-            row_values = []
-            for j in range(9):
-                value = self.board[i][j]
-                if value:
-                    row_values.append(int(value))
-                else:
-                    row_values.append(set(range(1, 10)))
-            csp.append(row_values)
-        return csp
-
-    def calculate_domain(self, row, col):
-        domain = set(range(1, 10))
-        for i in range(9):
-            # Exclude values already present in the same row
-            if self.board[row][i] != 0:
-                domain.discard(self.board[row][i])
-            # Exclude values already present in the same column
-            if self.board[i][col] != 0:
-                domain.discard(self.board[i][col])
-        # Exclude values already present in the same block
-        start_row, start_col = row - row % 3, col - col % 3
-        for i in range(3):
-            for j in range(3):
-                if self.board[start_row + i][start_col + j] != 0:
-                    domain.discard(self.board[start_row + i][start_col + j])
-        return domain
-
-    def backtrack_search(self, csp):
-        if self.is_complete(csp):
-            return csp
-
+    def backtrack_search(self):
+        if self.is_complete():
+            return self.domains
         # Select an unassigned variable
-        var = self.select_unassigned_variable(csp)
-
+        var = self.select_unassigned_variable()
+        if var is None:
+            return None  # No solution found
         # Retrieve the domain of the selected variable
-        domain = self.calculate_domain(var[0], var[1])
-
-        # Print domain of the selected variable (empty cell)
-        print(f"Domain of cell ({var[0]}, {var[1]}): {domain}")
-
+        domain = self.domains[var].copy()
         # Try assigning a value to the variable and recursively search
-        for value in domain:
-            if self.is_consistent(csp, var, value):
-                csp[var[0]][var[1]] = value
-                result = self.backtrack_search(csp)
-                if result:
-                    return result
-            csp[var[0]][var[1]] = set(range(1, 10))  # Undo assignment if unsuccessful
+        for value in list(domain):
+            # Assign the value to the variable
+            self.domains[var] = value
+            if self.isConsistent(var) :
+                result = self.backtrack_search()
+                if result is not None:
+                    return result  # Solution found
+            self.domains[var] = domain  # Undo assignment if unsuccessful
         return None
-
-    def is_complete(self, csp):
-        return all(isinstance(val, int) for row in csp for val in row)
-
-    def select_unassigned_variable(self, csp):
-        for i in range(9):
-            for j in range(9):
-                if isinstance(csp[i][j], set):
-                    return i, j
-        return None
-
-    def is_consistent(self, csp, var, value):
-        # Check row and column consistency
-        for i in range(9):
-            if i != var[0] and csp[i][var[1]] == value:
+    def isConsistent(self,variable):
+        arcs=self.arcs.copy()
+        for arc in arcs:
+            if arc[0]==variable and not isinstance(self.domains[arc[1]],set) and self.domains[variable]== self.domains[arc[1]] :
+               return False
+            if arc[1]==variable and not isinstance(self.domains[arc[0]],set)  and self.domains[variable] == self.domains[arc[0]]:
                 return False
-            if i != var[1] and csp[var[0]][i] == value:
-                return False
-
-        # Check 3x3 subgrid consistency
-        start_row, start_col = var[0] - var[0] % 3, var[1] - var[1] % 3
-        for i in range(3):
-            for j in range(3):
-                row = start_row + i
-                col = start_col + j
-                if (row, col) != var and csp[row][col] == value:
-                    return False
         return True
+
+    def is_complete(self):
+        i=0
+        for domain in self.domains.values():
+            i+=1
+            if not isinstance(domain,int):
+                print(i)
+                return False
+        return True
+    def select_unassigned_variable(self):#changed
+        min_domain_size = 10  # Initialize with a high value
+        selected_variable = None
+        for variable in self.variables:
+            if isinstance(self.domains[variable],set):
+                domain_size = len(self.domains[variable])
+                if domain_size < min_domain_size:
+                    min_domain_size = domain_size
+                    selected_variable = variable
+        return selected_variable
+
+
 
     def count_possible_solutions(self, board):
         # Convert the current board state to a CSP representation
         self.board = board
-        csp = self.convert_to_csp()
-
         # Initialize a counter for solutions
         self.solution_count = 0
 
         # Perform backtracking search with arc consistency to count solutions
-        self.backtrack_count(csp)
+        self.backtrack_count()
 
         return self.solution_count
 
-    def backtrack_count(self, csp):
-        if self.is_complete(csp):
-            # If a solution is found, increment the solution count
+    def backtrack_count(self):
+        if self.is_complete():
             self.solution_count += 1
             return
-
         # Select an unassigned variable
-        var = self.select_unassigned_variable(csp)
-
+        var = self.select_unassigned_variable()
+        if var is None:
+            return None  # No solution found
+        # Retrieve the domain of the selected variable
+        domain = self.domains[var].copy()
         # Try assigning a value to the variable and recursively search
-        for value in csp[var[0]][var[1]]:
-            if self.is_consistent(csp, var, value):
-                csp[var[0]][var[1]] = value
-                self.backtrack_count(csp)
-            csp[var[0]][var[1]] = set(range(1, 10))  # Undo assignment if unsuccessful
+        for value in list(domain):
+            # Assign the value to the variable
+            self.domains[var] = value
+            if self.isConsistent(var) :
+                result = self.backtrack_search()
+                if result is not None:
+                    return result  # Solution found
+            self.domains[var] = domain  # Undo assignment if unsuccessful
+        return None

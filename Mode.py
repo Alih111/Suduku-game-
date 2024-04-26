@@ -8,6 +8,7 @@ class ModelSelector:
         self.root.geometry("300x200")
         self.root.configure(bg="lightgray")
 
+
         self.label = tk.Label(self.root, text="Choose a Model:", font=("Arial", 14), bg="lightgray")
         self.label.pack(pady=10)
 
