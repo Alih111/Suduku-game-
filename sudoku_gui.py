@@ -80,8 +80,10 @@ class GUI:
 
         if self.userIsEnteringThePuzzle:#check if user input is possible for a suduku puzzle
             solver = SudokuSolver(self.board)
+            
             if solver.AC_3():
                 pass
+            
             else:
                 error_window = tk.Tk()
                 error_window.title("wrong input")
@@ -94,9 +96,21 @@ class GUI:
 
     def solve_sudoku(self):
         solver = SudokuSolver(self.board)
+        for row in self.board:
+            print(row)
+        count = solver.count_possible_solutions(self.board)
         solution = solver.solve_sudoku()
+
         if solution:
             self.update_gui(solution)
+            
+            error_window = tk.Tk()
+            error_window.title("Wrong Input")
+            error_window.geometry("300x300")
+            error_label_text = "The number of possible solutions for this puzzle: {}".format(count)
+            error_label = tk.Label(error_window, text=error_label_text, foreground="blue", font=("Arial", 12))
+            error_label.pack(padx=20, pady=20)
+            error_window.mainloop()
         else:
             print("No solution found.")
 

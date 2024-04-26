@@ -49,7 +49,7 @@ class SudokuSolver:
 
     def AC_3(self):
         queue = set(self.arcs)
-        print(len(queue))
+        
         while queue:
             arc = queue.pop()
             if self.revise(arc):
@@ -58,7 +58,6 @@ class SudokuSolver:
                 for xl, xk in self.arcs:
                     if xl != arc[0] and xk == arc[1]:
                         queue.add((arc[1],xl))
-                print(len(queue))
         return True
 
     def solve_sudoku(self):
@@ -81,6 +80,7 @@ class SudokuSolver:
         # Select an unassigned variable
         var = self.select_unassigned_variable()
         if var is None:
+            
             return None  # No solution found
         # Retrieve the domain of the selected variable
         domain = self.domains[var].copy()
@@ -127,6 +127,9 @@ class SudokuSolver:
     def count_possible_solutions(self, board):
         # Convert the current board state to a CSP representation
         self.board = board
+        self.initVariables()
+        self.initArcs()
+        self.initDomain()
         # Initialize a counter for solutions
         self.solution_count = 0
 
@@ -137,6 +140,7 @@ class SudokuSolver:
 
     def backtrack_count(self):
         if self.is_complete():
+
             self.solution_count += 1
             return
         # Select an unassigned variable
@@ -150,8 +154,6 @@ class SudokuSolver:
             # Assign the value to the variable
             self.domains[var] = value
             if self.isConsistent(var) :
-                result = self.backtrack_search()
-                if result is not None:
-                    return result  # Solution found
+                result = self.backtrack_count()
             self.domains[var] = domain  # Undo assignment if unsuccessful
-        return None
+

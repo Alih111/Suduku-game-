@@ -57,7 +57,7 @@ class SudokuGenerator:
         return -1, -1
 
     def remove_elements(self):
-        empty_cells = 50
+        empty_cells = 30
         solver = SudokuSolver(self.board)
         while empty_cells > 0:
             i, j = randrange(9), randrange(9)
@@ -67,17 +67,10 @@ class SudokuGenerator:
             self.board[i][j] = 0
             
             temp_board = [row[:] for row in self.board]
+            
             if solver.count_possible_solutions(temp_board) == 1:
+                
                 empty_cells -= 1
             else:
                 self.board[i][j] = temp
                 
-
-'''
-# Example usage
-generator = SudokuGenerator()
-initial_state, sudoku_solution = generator.generateSudoku()
-if sudoku_solution and initial_state:
-   pass
-else:
-    print("No solution exists")'''
