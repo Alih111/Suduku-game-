@@ -85,6 +85,7 @@ class SudokuSolver:
         # Select an unassigned variable
         var = self.select_unassigned_variable()
         if var is None:
+            
             return None  # No solution found
         # Retrieve the domain of the selected variable
         domain = self.domains[var].copy()
@@ -130,6 +131,9 @@ class SudokuSolver:
     def count_possible_solutions(self, board):
         # Convert the current board state to a CSP representation
         self.board = board
+        self.initVariables()
+        self.initArcs()
+        self.initDomain()
         # Initialize a counter for solutions
         self.solution_count = 0
 
@@ -140,6 +144,7 @@ class SudokuSolver:
 
     def backtrack_count(self):
         if self.is_complete():
+
             self.solution_count += 1
             return
         # Select an unassigned variable
