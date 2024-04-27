@@ -1,5 +1,5 @@
 
-from collections import deque
+import time
 class SudokuSolver:
     def __init__(self, board):
         self.board=board
@@ -49,7 +49,6 @@ class SudokuSolver:
 
     def AC_3(self):
         queue = set(self.arcs)
-        print(len(queue))
         while queue:
             arc = queue.pop()
             if self.revise(arc):
@@ -58,22 +57,27 @@ class SudokuSolver:
                 for xl, xk in self.arcs:
                     if xl != arc[0] and xk == arc[1]:
                         queue.add((arc[1],xl))
-                print(len(queue))
         return True
-
+    def assign(self):
+        for i in range(9):
+            for j in range(9):
+                if isinstance(self.domains[(i,j)],set) and len(self.domains[(i,j)])==1:
+                    self.domains[(i,j)]=self.domains[(i,j)].pop()
+                    self.board[i][j]=self.domains[(i,j)]
     def solve_sudoku(self):
-        if self.AC_3():
         # Perform backtracking search with arc consistency
+        if self.AC_3():
+            self.assign()#assign values to cells with one value in domain
             solution = self.backtrack_search()
             if solution is None:
-                print("No solution")
-                exit(1)
+                return None
             value = [[0 for _ in range(9)] for _ in range(9)]
             for i in range(9):
                 for j in range(9):
-                    value[i][j]=self.domains[(i,j)]
+                    value[i][j] = self.domains[(i, j)]
             return value
-        print("the puzzle you entered is wrong")
+        else:
+            return None
 
     def backtrack_search(self):
         if self.is_complete():
@@ -108,7 +112,6 @@ class SudokuSolver:
         for domain in self.domains.values():
             i+=1
             if not isinstance(domain,int):
-                print(i)
                 return False
         return True
     def select_unassigned_variable(self):#changed
@@ -150,8 +153,6 @@ class SudokuSolver:
             # Assign the value to the variable
             self.domains[var] = value
             if self.isConsistent(var) :
-                result = self.backtrack_search()
-                if result is not None:
-                    return result  # Solution found
+                result = self.backtrack_count()
             self.domains[var] = domain  # Undo assignment if unsuccessful
-        return None
+
