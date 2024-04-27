@@ -57,7 +57,7 @@ class SudokuGenerator:
         return -1, -1
 
     def remove_elements(self):
-        empty_cells = 30
+        empty_cells = 40
         solver = SudokuSolver(self.board)
         while empty_cells > 0:
             i, j = randrange(9), randrange(9)

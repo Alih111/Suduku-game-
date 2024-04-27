@@ -36,38 +36,47 @@ class SudokuSolver:
             else:
                 self.domains[variable] = self.board[variable[0]][variable[1]]
 
-    def revise(self, x):
+    def revise(self, x,steps):
+        
         revised = False
         if isinstance(self.domains[x[0]], int):
             value = self.domains[x[0]]
             if isinstance(self.domains[x[1]], set) and value in self.domains[x[1]]:
+                print("Step : "+str(steps))
+                print(f"Arc : {x[0]} -> {x[1]}")
+                print(f"Domains : {self.domains[x[0]]} -> {self.domains[x[1]]}")
+                print(f"Remove ({value}) from {x[1]}")
                 self.domains[x[1]].remove(value)
+                print(f"New domain : {self.domains[x[1]]}")   
                 revised = True
             elif isinstance(self.domains[x[1]], int) and value == self.domains[x[1]]:
+                print("Step : "+str(steps))
+                print(f"Arc : {x[0]} -> {x[1]}")
+                print(f"Domains : {self.domains[x[0]]} -> {self.domains[x[1]]}")
+                print(f"Remove ({value}) from {x[1]}")
+                print("New domain : {}")
                 revised = True
+    
         return revised
 
     def AC_3(self):
         queue = set(self.arcs)
+        steps = 1
         while queue:
             arc = queue.pop()
-            if self.revise(arc):
-                if isinstance(self.domains[arc[1]], int) and self.domains[arc[0]] == self.domains[arc[1]] or (isinstance(self.domains[arc[1]],set)and len(self.domains[arc[1]])==0):
+            if self.revise(arc,steps):
+                
+                if isinstance(self.domains[arc[1]], int) and self.domains[arc[0]] == self.domains[arc[1]] or (isinstance(self.domains[arc[1]],set)and len(self.domains[arc[1]])==0) :
                     return False
                 for xl, xk in self.arcs:
                     if xl != arc[0] and xk == arc[1]:
                         queue.add((arc[1],xl))
+            steps = steps+1            
         return True
-    def assign(self):
-        for i in range(9):
-            for j in range(9):
-                if isinstance(self.domains[(i,j)],set) and len(self.domains[(i,j)])==1:
-                    self.domains[(i,j)]=self.domains[(i,j)].pop()
-                    self.board[i][j]=self.domains[(i,j)]
+    
     def solve_sudoku(self):
         # Perform backtracking search with arc consistency
         if self.AC_3():
-            self.assign()#assign values to cells with one value in domain
             solution = self.backtrack_search()
             if solution is None:
                 return None

@@ -135,17 +135,22 @@ class GUI:
                     k+=1
        # for row in self.board:
         #    print(row)
-        #count = solver.count_possible_solutions(self.board)
-        solution = solver.solve_sudoku()
-        self.canvas.bind("<Button-1>", self.get_input)
+        
+        
         if k >=7:
+            count = solver.count_possible_solutions(self.board)
+            solution = solver.solve_sudoku()
+            self.canvas.bind("<Button-1>", self.get_input)
+        
             if solution:
                 self.update_gui(solution)
+                self.errorWindow(f"the number of possible solution is {count}")  
             else:
                 self.errorWindow("no solution")
+              
         else:
             self.errorWindow("enter at least 7 clues")
-
+        
     def errorWindow(self,text):
         error_window = tk.Tk()
         error_window.title("wrong input")
